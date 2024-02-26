@@ -1,4 +1,4 @@
-# Company Leave Management System API
+# Employee Management System API
 
 This API provides functionalities for managing user accounts, leaves, check-ins/check-outs, and timesheets in a company's leave management system.
 
