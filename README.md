@@ -194,7 +194,9 @@ This API provides functionalities for managing user accounts, leaves, check-ins/
 ## Prerequisites
 - Node.js
 - Express.js
-- MongoDB
+- TypeScript
+- TypeORM
+- PgSQL
 
 ## Getting Started
 1. Clone the repository
