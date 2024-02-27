@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+
+enum LeaveStatus {
+    PENDING = 0;
+    APPROVED = 1;
+    REJECTED = 2;
+}
+
+message Leave {
+    string id = 1;
+    int32 userId = 2;
+    string reason = 3;
+    google.protobuf.Timestamp start_date = 4;
+    google.protobuf.Timestamp end_date = 5;
+    LeaveStatus status = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
+}
+
+message applyLeaveRequest {
+    string startDate=1;
+    string endDate=2;
+    string reason=3;
+}
+
+message ApplyLeaveResponse {
+    bool success = 1;
+    string message = 2;
+    Leave leave = 3;
+}
+
+message LeaveHistoryRequest {
+    // the data can be get directly from the req.user
+    int32 id=1;
+    string email=2;
+}
+
+message LeaveHistoryResponse {
+    repeated Leave leaveHistory = 1;
+}
+
+message ApproveLeaveRequest {
+    // the data can be get directly from the req.params
+    int32 leaveId=1;
+}
+
+
+message ApproveLeaveResponse {
+    string message = 1;
+}
+
+
+message RejectLeaveRequest {
+    // the data can be get directly from the req.params
+    int32 leaveId=1;
+}
+
+message RejectLeaveResponse {
+    string message = 1;
+}
+
+message AllLeavesResponse {
+    repeated Leave allLeaves = 1;
+}

@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+
+import  "CheckIn.proto";
+import "CheckOut.proto";
+import "Leave.proto";
+import "google/protobuf/timestamp.proto";
+
+
+message User {
+    int32 id = 1;
+    string firstName = 2;
+    string lastName = 3;
+    string email = 4;
+    string password = 5;
+    repeated CheckIn checkIn = 6;
+    repeated CheckOut checkOut = 7;
+    repeated Leave leave=8;
+    int32 leavesTaken = 9;
+    int32 totalLeavesPerMonth = 10;
+    google.protobuf.Timestamp createdAt = 11;
+    google.protobuf.Timestamp updatedAt = 12;
+}
+
+message SignupRequest {
+    string firstName = 1;
+    string lastName = 2;
+    string email = 3;
+    string password = 4;
+    string confirmPassword = 5;
+}
+
+message SignupResponse {
+    bool success =1;
+    string message =2;
+    User user=3;
+}
+
+message LoginRequest {
+    string email=1;
+    string password=2;
+}
+
+message LoginResponse {
+    bool success = 1;
+    string message=2;
+    string token=3;
+    User user=4;
+}
+
+
+
