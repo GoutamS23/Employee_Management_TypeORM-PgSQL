@@ -25,11 +25,17 @@ export const applyLeave=async(req:Request,res:Response)=>{
          const userRepo=await AppDataSource.getRepository(User)
          const leaveRepo=await AppDataSource.getRepository(Leave)
 
-         const user=await userRepo.findOne(
-            {
-                where:{id:currentUser.id}
-            }
-         )
+        //  const user=await userRepo.findOne(
+        //     {
+        //         where:{id:currentUser.id}
+        //     }
+        //  )
+
+        const user = await AppDataSource
+            .getRepository(User)
+            .createQueryBuilder("user")
+            .where("user.id = :id", { id: currentUser.id })
+            .getOne()
 
          if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -53,6 +59,14 @@ export const applyLeave=async(req:Request,res:Response)=>{
         user.leavesTaken += leaveDays;
 
         await userRepo.save(user)
+
+        // using query builder
+        
+        // await AppDataSource.createQueryBuilder()
+        //                     .update(User)
+        //                     .set({leavesTaken:leaveDays})
+        //                     .where("id=:id",{id:currentUser.id})
+        //                     .execute()
 
 
     }catch(err) {

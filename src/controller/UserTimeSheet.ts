@@ -5,6 +5,8 @@ import { CheckOut } from '../entity/CheckOut';
 import { Leave, LeaveStatus } from '../entity/Leaves';
 import moment from 'moment';
 import { AppDataSource } from '../config/DataSource';
+import { createQueryBuilder } from 'typeorm';
+import { MoreThanOrEqual, LessThanOrEqual } from "typeorm";
 
 
 export const generateTimesheet = async (req: Request, res: Response) => {
@@ -26,32 +28,52 @@ export const generateTimesheet = async (req: Request, res: Response) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const checkIns = await checkInRepo.find({
-            relations: { user: true },
-            where: { user: { id: currentUserId.id } }
+        // const checkIns = await checkInRepo.find({
+        //     relations: { user: true },
+        //     where: { user: { id: currentUserId } }
 
-        });
+        // });
 
-        const checkOuts = await checkOutRepo.find({
-            relations: { user: true },
-            where: { user: { id: currentUserId.id } }
-        })
+        const checkIns = await checkInRepo
+            .createQueryBuilder("checkIn")
+            .innerJoinAndSelect("checkIn.user", "user")
+            .where("user.id = :userId", { userId: currentUserId })
+            .getMany();
 
-        const leaves = await leaveRepo.find({
-            relations: { user: true },
-            where:{ 
-                user:{id:currentUserId.id},
-                status:LeaveStatus.APPROVED
-            }
-        })
+
+        // const checkOuts = await checkOutRepo.find({
+        //     relations: { user: true },
+        //     where: { user: { id: currentUserId } }
+        // })
+
+        const checkOuts = await checkOutRepo
+            .createQueryBuilder("checkOut")
+            .innerJoinAndSelect("checkOut.user", "user")
+            .where("user.id = :userId", { userId: currentUserId })
+            .getMany()
+
+        // const leaves = await leaveRepo.find({
+        //     relations: { user: true },
+        //     where:{ 
+        //         user:{id:currentUserId.id},
+        //         status:LeaveStatus.APPROVED
+        //     }
+        // })
+
+        const leaves = await leaveRepo
+            .createQueryBuilder("leave")
+            .innerJoinAndSelect("leave.user", "user")
+            .where("user.id = :userId", { userId: currentUserId })
+            .andWhere("status = :leaveStatus", { leaveStatus: LeaveStatus.APPROVED })
+            .getMany()
 
         const leaveReason = leaves.length > 0 ? leaves[0].reason : 'NULL';
 
 
-        console.log("c_id", currentUserId);
+        // console.log("c_id", currentUserId);
 
-        console.log("checkIns", checkIns);
-        console.log("checkOuts", checkOuts);
+        // console.log("checkIns", checkIns);
+        // console.log("checkOuts", checkOuts);
 
         console.log("leaves", leaves);
 
@@ -146,39 +168,33 @@ export const generateTimesheetByDate = async (req: Request, res: Response) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const checkIns = await checkInRepo.find(
-            {
-                relations: {
-                    user: true
-                },
-                where: {
-                    id: currentUserId,
-                    // timestamp:{$get:startDate}
-                }
-            }
-        )
+
+        const checkIns = await checkInRepo
+            .createQueryBuilder("checkIn")
+            .innerJoinAndSelect("checkIn.user", "user")
+            .where("user.id = :userId", { userId: currentUserId })
+            .andWhere("checkIn.timestamp >= :startDate", { startDate })
+            .getMany();
+
+        
+
+        const checkOuts = await checkOutRepo
+            .createQueryBuilder("checkOut")
+            .innerJoinAndSelect("checkOut.user", "user")
+            .where("user.id = :userId", { userId: currentUserId })
+            .andWhere("checkOut.timestamp >= :startDate", { startDate: startDate })
+            .getMany();
 
 
-        const checkOuts = await checkOutRepo.find(
-            {
-                relations: {
-                    user: true
-                },
-                where: {
-                    id: currentUserId,
-                    // timestamp:{$get:startDate}
-                }
-            }
-        )
+            const leaves = await leaveRepo
+            .createQueryBuilder("leave")
+            .where("leave.id = :userId", { userId: currentUserId })
+            .andWhere("leave.startDate >= :startDate", { startDate: startDate })
+            .andWhere("leave.endDate <= :endDate", { endDate: endDate })
+            .getMany();
 
-        const leaves = await leaveRepo.find(
-            {
-                where: {
-                    id: currentUserId,
-                    // startDate: { $gte: startDate, $lte: endDate }
-                }
-            }
-        );
+            console.log(leaves);
+        
 
         const leaveReason = leaves.length > 0 ? leaves[0].reason : 'NULL';
 

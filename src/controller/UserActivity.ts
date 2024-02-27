@@ -11,22 +11,32 @@ export const checkInUser = async (req: Request, res: Response) => {
         const currentUser = req.user;
 
 
-        const checkInRepo = await AppDataSource.getRepository(CheckIn);
+        // const checkInRepo = await AppDataSource.getRepository(CheckIn);
 
-        const newCheckIn=new CheckIn();
-        newCheckIn.user=currentUser;
+        // const newCheckIn=new CheckIn();
+        // newCheckIn.user=currentUser;
 
-        await checkInRepo.save(newCheckIn);
+        // await checkInRepo.save(newCheckIn);
+
+        await AppDataSource
+            .createQueryBuilder()
+            .insert()
+            .into(CheckIn)
+            .values([
+                { user: currentUser }
+            ])
+            .execute()
+
 
         res.status(200).json({
-            message:"checkedIn successfully"
+            message: "checkedIn successfully"
         })
 
 
-} catch (err) {
-    console.error('Error during check-in:', err);
-    res.status(500).json({ error: 'Internal server error' });
-}
+    } catch (err) {
+        console.error('Error during check-in:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 };
 
 
@@ -65,10 +75,19 @@ export const checkOutUser = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'user not checked in today' });
         }
 
-        const newCheckOut = new CheckOut();
-        newCheckOut.user = currentUser;
+        // const newCheckOut = new CheckOut();
+        // newCheckOut.user = currentUser;
 
-        await checkOutRepo.save(newCheckOut);
+        // await checkOutRepo.save(newCheckOut);
+
+        await AppDataSource
+            .createQueryBuilder()
+            .insert()
+            .into(CheckOut)
+            .values([
+                { user: currentUser }
+            ])
+            .execute()
 
         res.status(200).json({
             success: true,

@@ -41,12 +41,21 @@ export const signup = async (req: Request, res: Response) => {
             });
         }
 
-        const userRepo = await AppDataSource.getRepository(User)
+        const existingUser = await AppDataSource
+            .getRepository(User)
+            .createQueryBuilder("user")
+            .where("user.email = :email", { email: email })
+            .getOne()
 
-        const existingUser = await userRepo.findOne(
-            {
-                where: { email: email }
-            });
+        
+
+        // const userRepo=await AppDataSource.getRepository(User)
+        // const existingUser = await userRepo.findOne(
+        //     {
+        //         where: { email: email }
+        //     });
+
+
 
         if (existingUser) {
             return res.status(400).json({
@@ -58,18 +67,29 @@ export const signup = async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
 
-        const newUser = new User();
-        newUser.firstName = firstName,
-            newUser.lastName = lastName,
-            newUser.email = email,
-            newUser.password = hashedPassword
+        // const newUser = new User();
+        // newUser.firstName = firstName,
+        //     newUser.lastName = lastName,
+        //     newUser.email = email,
+        //     newUser.password = hashedPassword
+
+        // await userRepo.save(newUser)
+
+        await AppDataSource
+            .createQueryBuilder()
+            .insert()
+            .into(User)
+            .values([
+                { firstName: firstName, lastName: lastName, email: email, password: hashedPassword }
+            ])
+            .execute()
 
 
-        await userRepo.save(newUser)
+
 
         return res.status(200).json({
             success: true,
-            newUser,
+            // newUser,
             message: "User registered successfully",
         });
 
@@ -99,13 +119,19 @@ export const login = async (req: Request, res: Response) => {
             });
         }
 
-        const userRepo = await AppDataSource.getRepository(User);
+        // const userRepo = await AppDataSource.getRepository(User);
 
-        const user = await userRepo.findOne(
-            {
-                where: { email: email }
-            }
-        );
+        // const user = await userRepo.findOne(
+        //     {
+        //         where: { email: email }
+        //     }
+        // );
+
+        const user = await AppDataSource
+            .getRepository(User)
+            .createQueryBuilder("user")
+            .where("user.email = :email", { email: email })
+            .getOne()
 
         if (!user) {
             return res.status(401).json({
